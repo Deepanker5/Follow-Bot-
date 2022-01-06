@@ -1,0 +1,52 @@
+#define interruptPin1 2
+#define interruptPin2 3
+int motor1 = 5;
+int motor2 = 10;
+volatile unsigned long time1=0; 
+volatile unsigned long time2=0; 
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(motor1, OUTPUT);
+  pinMode(motor2, OUTPUT);
+  pinMode(interruptPin1, INPUT_PULLUP);
+  pinMode(interruptPin2, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(interruptPin1), sonar1, RISING);
+  attachInterrupt(digitalPinToInterrupt(interruptPin2), sonar2, RISING);
+}
+
+void loop() {
+  if (time1!=0 && time2!=0){
+    noInterrupts();
+    long delay = abs(time1-time2);
+    Serial.println("Go straight "+ delay);
+    analogWrite(motor1, 255);
+    analogWrite(motor2, 255);
+    if (time1>=time2){
+      Serial.println("Turn left");
+      analogWrite(motor1, 255);
+      analogWrite(motor2, 0);
+      delayMicroseconds(20);
+    }
+    else {
+      Serial.println("Turn right");
+      analogWrite(motor1,0);
+      analogWrite(motor2, 255);
+      delayMicroseconds(20);
+    }
+    time1=0;
+    time2=0;
+    delayMicroseconds(5000);
+    interrupts();
+    analogWrite(motor1, 50);
+    analogWrite(motor2, 50);
+  }
+}
+
+void sonar1() {
+  time1=millis();
+}
+
+void sonar2(){
+  time2=millis();
+}
